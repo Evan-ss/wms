@@ -2,18 +2,18 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const db = require('../config/database');
+const { generateToken } = require('../middleware/auth');
 
 // GET Login Page
 router.get('/login', (req, res) => {
-  if (req.session.user) {
+  // Check if user is already authenticated via JWT
+  if (req.cookies.authToken) {
     return res.redirect('/');
   }
   res.render('auth/login', {
-    error: req.session.errorMessage,
-    success: req.session.successMessage
+    error: req.query.error || null,
+    success: req.query.success || null
   });
-  delete req.session.errorMessage;
-  delete req.session.successMessage;
 });
 
 // POST Login
@@ -23,8 +23,7 @@ router.post('/login', async (req, res) => {
 
     // Validation
     if (!whatsapp || !password) {
-      req.session.errorMessage = 'WhatsApp dan password harus diisi';
-      return res.redirect('/login');
+      return res.redirect('/login?error=' + encodeURIComponent('WhatsApp dan password harus diisi'));
     }
 
     // Normalize WhatsApp number (remove spaces, dashes, etc)
@@ -46,8 +45,7 @@ router.post('/login', async (req, res) => {
       // Verify password
       const passwordMatch = await bcrypt.compare(password, user.password);
       if (!passwordMatch) {
-        req.session.errorMessage = 'Nomor WhatsApp atau password salah';
-        return res.redirect('/login');
+        return res.redirect('/login?error=' + encodeURIComponent('Nomor WhatsApp atau password salah'));
       }
 
       // Check if this user is super_admin by role_name
@@ -61,8 +59,7 @@ router.post('/login', async (req, res) => {
       );
 
       if (superAdmins.length === 0) {
-        req.session.errorMessage = 'Nomor WhatsApp atau password salah';
-        return res.redirect('/login');
+        return res.redirect('/login?error=' + encodeURIComponent('Nomor WhatsApp atau password salah'));
       }
 
       user = superAdmins[0];
@@ -70,16 +67,15 @@ router.post('/login', async (req, res) => {
       // Verify password
       const passwordMatch = await bcrypt.compare(password, user.password);
       if (!passwordMatch) {
-        req.session.errorMessage = 'Nomor WhatsApp atau password salah';
-        return res.redirect('/login');
+        return res.redirect('/login?error=' + encodeURIComponent('Nomor WhatsApp atau password salah'));
       }
 
       // This is from super_admin table
       isSuperAdmin = true;
     }
 
-    // Set session with user data
-    req.session.user = {
+    // Generate JWT token
+    const userData = {
       id: user.id,
       name: user.name,
       whatsapp: user.whatsapp,
@@ -90,24 +86,28 @@ router.post('/login', async (req, res) => {
       isSuperAdmin: isSuperAdmin
     };
 
-    req.session.successMessage = `Selamat datang, ${user.name}!`;
-    res.redirect('/');
+    const token = generateToken(userData);
+
+    // Set JWT token as HTTP-only cookie (more secure)
+    res.cookie('authToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+
+    res.redirect('/?success=' + encodeURIComponent(`Selamat datang, ${user.name}!`));
 
   } catch (error) {
     console.error('Login error:', error);
-    req.session.errorMessage = 'Terjadi kesalahan saat login. Silakan coba lagi.';
-    res.redirect('/login');
+    res.redirect('/login?error=' + encodeURIComponent('Terjadi kesalahan saat login. Silakan coba lagi.'));
   }
 });
 
 // GET Logout
 router.get('/logout', (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      console.error('Logout error:', err);
-    }
-    res.redirect('/login');
-  });
+  // Clear JWT token cookie
+  res.clearCookie('authToken');
+  res.redirect('/login?success=' + encodeURIComponent('Anda telah berhasil logout'));
 });
 
 module.exports = router;

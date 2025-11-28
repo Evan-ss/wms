@@ -1,5 +1,5 @@
 const express = require('express');
-const session = require('express-session');
+const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const path = require('path');
 require('dotenv').config();
@@ -15,19 +15,27 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(cookieParser());
 
-// Session middleware
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
-}));
+// JWT authentication middleware for views
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
 
-// Make session available to all views
 app.use((req, res, next) => {
-  res.locals.session = req.session;
-  res.locals.user = req.session.user || null;
+  // Try to get user from JWT token
+  const token = req.cookies.authToken;
+  let user = null;
+  
+  if (token) {
+    try {
+      user = jwt.verify(token, JWT_SECRET);
+    } catch (error) {
+      // Invalid token, clear it
+      res.clearCookie('authToken');
+    }
+  }
+  
+  res.locals.user = user;
   res.locals.currentPath = req.path;
   next();
 });

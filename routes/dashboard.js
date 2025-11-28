@@ -63,7 +63,8 @@ router.get('/', async (req, res) => {
       lowStock,
       recentIncoming,
       recentOutgoing,
-      body: ''
+      body: '',
+      success: req.query.success || null
     });
   } catch (error) {
     console.error('Dashboard error:', error);
