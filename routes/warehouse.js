@@ -26,6 +26,23 @@ router.get('/locations', async (req, res) => {
   }
 });
 
+// API: Get next location code
+router.get('/locations/api/next-code', async (req, res) => {
+  try {
+    // Get the last inserted ID
+    const [result] = await db.query(`
+      SELECT MAX(id) as max_id FROM warehouse_locations
+    `);
+    
+    const nextId = (result[0].max_id || 0) + 1;
+    const nextCode = `WH${String(nextId).padStart(3, '0')}`;
+    
+    res.json({ code: nextCode, nextId: nextId });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get location data for edit
 router.get('/locations/:id/data', async (req, res) => {
   try {
@@ -115,6 +132,23 @@ router.post('/locations/delete/:id', async (req, res) => {
 });
 
 // Racks
+// API: Get next rack code
+router.get('/racks/api/next-code', async (req, res) => {
+  try {
+    // Get the last inserted ID
+    const [result] = await db.query(`
+      SELECT MAX(id) as max_id FROM warehouse_racks
+    `);
+    
+    const nextId = (result[0].max_id || 0) + 1;
+    const nextCode = `RAK-${String(nextId).padStart(3, '0')}`;
+    
+    res.json({ code: nextCode, nextId: nextId });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get('/racks', async (req, res) => {
   try {
     const [racks] = await db.query(`
@@ -229,6 +263,23 @@ router.post('/racks/delete/:id', async (req, res) => {
 });
 
 // Bins
+// API: Get next bin code
+router.get('/bins/api/next-code', async (req, res) => {
+  try {
+    // Get the last inserted ID
+    const [result] = await db.query(`
+      SELECT MAX(id) as max_id FROM warehouse_bins
+    `);
+    
+    const nextId = (result[0].max_id || 0) + 1;
+    const nextCode = `BIN-${String(nextId).padStart(3, '0')}`;
+    
+    res.json({ code: nextCode, nextId: nextId });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get('/bins', async (req, res) => {
   try {
     const [bins] = await db.query(`
