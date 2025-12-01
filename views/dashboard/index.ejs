@@ -145,6 +145,33 @@
   .stat-card:nth-child(2) { animation-delay: 0.1s; }
   .stat-card:nth-child(3) { animation-delay: 0.2s; }
   .stat-card:nth-child(4) { animation-delay: 0.3s; }
+
+  /* Statistics Cards Collapse Styles */
+  .stats-collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  .stats-expanded {
+    max-height: 500px;
+    opacity: 1;
+  }
+
+  /* Equipment Cards Collapse Styles */
+  .equipment-collapsed {
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  .equipment-expanded {
+    max-height: 2000px;
+    opacity: 1;
+  }
 </style>
   
 <%- include('../partials/navbar') %>
@@ -152,7 +179,7 @@
 <%- include('../partials/sidebar') %>
   
 <!-- Main Content -->
-<main id="mainContent" class="ml-64 mt-16 p-4 md:p-6 lg:p-8 transition-all duration-300 min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
+<main id="mainContent" class="ml-64 mt-16 p-4 md:p-6 lg:p-8 transition-all duration-300 min-h-screen bg-gray-100">
   
   <!-- Success Message -->
   <% if (typeof success !== 'undefined' && success) { %>
@@ -213,8 +240,55 @@
     </div>
   </div>
     
-  <!-- Statistics Cards - Modern Design with Gradients -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+  <!-- Statistics Cards Section with Collapse -->
+  <div class="mb-8">
+    <!-- Header with Toggle (Clickable) -->
+    <div 
+      onclick="toggleStatsCards()"
+      class="flex items-center justify-between mb-4 bg-white cursor-pointer group hover:bg-gray-50 rounded-lg p-3 -m-3 transition-all duration-200"
+    >
+      <div class="flex items-center space-x-3">
+        <div class="w-1 h-8 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full group-hover:h-10 transition-all duration-200"></div>
+        <div>
+          <h2 class="text-xl font-bold text-gray-800 group-hover:text-gray-900">Statistik Dashboard</h2>
+          <p class="text-sm text-gray-500 group-hover:text-gray-600">Overview statistik sistem real-time</p>
+        </div>
+      </div>
+      <div 
+        id="statsToggle" 
+        class="flex items-center hidden space-x-2 px-4 py-2 bg-white border border-gray-200 rounded-lg group-hover:bg-gray-100 group-hover:border-gray-300 transition-all duration-200 shadow-sm group-hover:shadow-md"
+        aria-label="Toggle statistics visibility"
+      >
+        <span class="text-sm font-medium text-gray-600 group-hover:text-gray-800">Sembunyikan</span>
+        <i class="fas fa-chevron-up text-gray-400 group-hover:text-gray-600 transition-all duration-300" id="statsChevron"></i>
+      </div>
+    </div>
+
+    <!-- Statistics Cards - Modern Design with Gradients -->
+    <div id="statsCards" class="stats-expanded transition-all duration-500 ease-in-out overflow-hidden">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+
+        <!-- Total Jamaah - Teal Gradient -->
+        <div class="stat-card group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl">
+      <div class="absolute inset-0 bg-gradient-to-br from-teal-500 to-cyan-600 opacity-90 group-hover:opacity-100 transition-opacity"></div>
+      <div class="relative p-6 text-white">
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex-1">
+            <p class="text-white/80 text-sm font-semibold uppercase tracking-wider mb-1">Total Jamaah</p>
+            <h3 class="text-4xl md:text-5xl font-black"><%= stats.totalJamaah %></h3>
+          </div>
+          <div class="flex-none bg-white/20 backdrop-blur-sm p-4 rounded-xl group-hover:scale-110 transition-transform">
+            <i class="fas fa-users text-3xl text-white"></i>
+          </div>
+        </div>
+        <div class="flex items-center text-white/90 text-sm">
+          <i class="fas fa-user-check mr-2"></i>
+          <span>Jamaah Terdaftar</span>
+        </div>
+      </div>
+      <div class="absolute -bottom-8 -right-8 w-32 h-32 bg-white/10 rounded-full"></div>
+    </div>
+
     <!-- Total Cabang - Blue Gradient -->
     <div class="stat-card group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl">
       <div class="absolute inset-0 gradient-bg-blue opacity-90 group-hover:opacity-100 transition-opacity"></div>
@@ -258,27 +332,6 @@
       <div class="absolute -bottom-8 -right-8 w-32 h-32 bg-white/10 rounded-full"></div>
     </div>
     
-    <!-- Total Barang - Cyan Gradient -->
-    <div class="stat-card group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl">
-      <div class="absolute inset-0 gradient-bg-purple opacity-90 group-hover:opacity-100 transition-opacity"></div>
-      <div class="relative p-6 text-white">
-        <div class="flex items-start justify-between mb-4">
-          <div class="flex-1">
-            <p class="text-white/80 text-sm font-semibold uppercase tracking-wider mb-1">Total Barang</p>
-            <h3 class="text-4xl md:text-5xl font-black"><%= stats.barang %></h3>
-          </div>
-          <div class="flex-none bg-white/20 backdrop-blur-sm p-4 rounded-xl group-hover:scale-110 transition-transform">
-            <i class="fas fa-box text-3xl text-white"></i>
-          </div>
-        </div>
-        <div class="flex items-center text-white/90 text-sm">
-          <i class="fas fa-cubes mr-2"></i>
-          <span>Jenis Produk</span>
-        </div>
-      </div>
-      <div class="absolute -bottom-8 -right-8 w-32 h-32 bg-white/10 rounded-full"></div>
-    </div>
-    
     <!-- Total Gudang - Orange Gradient -->
     <div class="stat-card group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl">
       <div class="absolute inset-0 gradient-bg-orange opacity-90 group-hover:opacity-100 transition-opacity"></div>
@@ -298,6 +351,229 @@
         </div>
       </div>
       <div class="absolute -bottom-8 -right-8 w-32 h-32 bg-white/10 rounded-full"></div>
+    </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Equipment Availability Section -->
+  <div class="mb-8">
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+      <!-- Header (Clickable) -->
+      <div 
+        onclick="toggleEquipmentCards()"
+        class="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 cursor-pointer hover:from-indigo-600 hover:to-purple-700 transition-all duration-200"
+      >
+        <div class="flex items-center justify-between text-white">
+          <div class="flex items-center flex-1">
+            <div class="p-2 bg-white/20 backdrop-blur-sm rounded-lg mr-3">
+              <i class="fas fa-box-open"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold">Ketersediaan Perlengkapan</h3>
+              <p class="text-indigo-100 text-sm mt-1">Status ketersediaan barang dari purchasing</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-4">
+            <div class="text-right">
+              <div class="text-3xl font-bold"><%= stats.equipment.totalItems %></div>
+              <div class="text-xs text-indigo-100">Total Items</div>
+            </div>
+            <div class="flex items-center space-x-2 px-3 py-2 bg-white/20 backdrop-blur-sm rounded-lg">
+              <span class="text-sm font-medium">Sembunyikan</span>
+              <i class="fas fa-chevron-up transition-all duration-300" id="equipmentChevron"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Grid (Collapsible) -->
+      <div id="equipmentCards" class="equipment-expanded transition-all duration-500 ease-in-out overflow-hidden">
+        <div class="p-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <!-- Available Stock -->
+            <div class="group bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border-2 border-green-200 hover:border-green-400 transition-all duration-300 hover:shadow-lg cursor-pointer"
+                 onclick="toggleEquipmentDetail('available')">
+              <div class="flex items-center justify-between mb-3">
+                <div class="p-3 bg-green-500 rounded-lg group-hover:scale-110 transition-transform">
+                  <i class="fas fa-check-circle text-2xl text-white"></i>
+                </div>
+                <div class="text-right">
+                  <div class="text-3xl font-black text-green-700"><%= stats.equipment.availableItems %></div>
+                </div>
+              </div>
+              <h4 class="text-sm font-bold text-green-800 uppercase tracking-wide">Stok Tersedia</h4>
+              <p class="text-xs text-green-600 mt-1">Stock >= Minimal <i class="fas fa-chevron-down ml-1"></i></p>
+            </div>
+
+            <!-- Low Stock -->
+            <div class="group bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl p-5 border-2 border-yellow-200 hover:border-yellow-400 transition-all duration-300 hover:shadow-lg cursor-pointer"
+                 onclick="toggleEquipmentDetail('lowStock')">
+              <div class="flex items-center justify-between mb-3">
+                <div class="p-3 bg-yellow-500 rounded-lg group-hover:scale-110 transition-transform">
+                  <i class="fas fa-exclamation-triangle text-2xl text-white"></i>
+                </div>
+                <div class="text-right">
+                  <div class="text-3xl font-black text-yellow-700"><%= stats.equipment.lowStockItems %></div>
+                </div>
+              </div>
+              <h4 class="text-sm font-bold text-yellow-800 uppercase tracking-wide">Stok Menipis</h4>
+              <p class="text-xs text-yellow-600 mt-1">Stock < Minimal <i class="fas fa-chevron-down ml-1"></i></p>
+            </div>
+
+            <!-- Out of Stock -->
+            <div class="group bg-gradient-to-br from-red-50 to-rose-50 rounded-xl p-5 border-2 border-red-200 hover:border-red-400 transition-all duration-300 hover:shadow-lg cursor-pointer"
+                 onclick="toggleEquipmentDetail('outOfStock')">
+              <div class="flex items-center justify-between mb-3">
+                <div class="p-3 bg-red-500 rounded-lg group-hover:scale-110 transition-transform animate-pulse">
+                  <i class="fas fa-times-circle text-2xl text-white"></i>
+                </div>
+                <div class="text-right">
+                  <div class="text-3xl font-black text-red-700"><%= stats.equipment.outOfStockItems %></div>
+                </div>
+              </div>
+              <h4 class="text-sm font-bold text-red-800 uppercase tracking-wide">Stok Habis</h4>
+              <p class="text-xs text-red-600 mt-1">Stock = 0 <i class="fas fa-chevron-down ml-1"></i></p>
+            </div>
+
+            <!-- Total Stock Quantity -->
+            <div class="group bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-5 border-2 border-blue-200 hover:border-blue-400 transition-all duration-300 hover:shadow-lg">
+              <div class="flex items-center justify-between mb-3">
+                <div class="p-3 bg-blue-500 rounded-lg group-hover:scale-110 transition-transform">
+                  <i class="fas fa-cubes text-2xl text-white"></i>
+                </div>
+                <div class="text-right">
+                  <div class="text-3xl font-black text-blue-700"><%= stats.equipment.totalStockQty.toLocaleString() %></div>
+                </div>
+              </div>
+              <h4 class="text-sm font-bold text-blue-800 uppercase tracking-wide">Total Qty</h4>
+              <p class="text-xs text-blue-600 mt-1">Total Unit Stock</p>
+            </div>
+          </div>
+
+          <!-- Item Lists (Collapsible) -->
+          <!-- Available Items List -->
+          <div id="availableList" class="hidden mb-4">
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border-2 border-green-200">
+              <h5 class="text-sm font-bold text-green-800 mb-3 flex items-center">
+                <i class="fas fa-list mr-2"></i>Daftar Barang Stok Tersedia (<%= equipmentItems.available.length %>)
+              </h5>
+              <div class="max-h-60 overflow-y-auto custom-scrollbar space-y-2">
+                <% if (equipmentItems.available.length === 0) { %>
+                  <p class="text-sm text-green-600 text-center py-4">Tidak ada barang</p>
+                <% } else { %>
+                  <% equipmentItems.available.forEach((item, index) => { %>
+                    <div class="bg-white rounded-lg p-3 flex items-center justify-between hover:shadow-md transition-shadow">
+                      <div class="flex items-center space-x-3 flex-1 min-w-0">
+                        <div class="flex-none w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center text-white text-xs font-bold">
+                          <%= index + 1 %>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <p class="text-sm font-bold text-gray-800 truncate"><%= item.nama_barang %></p>
+                          <p class="text-xs text-gray-500"><%= item.kode_barang || 'N/A' %></p>
+                        </div>
+                      </div>
+                      <div class="flex items-center space-x-2 flex-none">
+                        <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold"><%= item.stock_akhir %> <%= item.satuan %></span>
+                        <span class="text-xs text-gray-500">/ <%= item.stock_minimal %></span>
+                      </div>
+                    </div>
+                  <% }); %>
+                <% } %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Low Stock Items List -->
+          <div id="lowStockList" class="hidden mb-4">
+            <div class="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl p-4 border-2 border-yellow-200">
+              <h5 class="text-sm font-bold text-yellow-800 mb-3 flex items-center">
+                <i class="fas fa-list mr-2"></i>Daftar Barang Stok Menipis (<%= equipmentItems.lowStock.length %>)
+              </h5>
+              <div class="max-h-60 overflow-y-auto custom-scrollbar space-y-2">
+                <% if (equipmentItems.lowStock.length === 0) { %>
+                  <p class="text-sm text-yellow-600 text-center py-4">Tidak ada barang</p>
+                <% } else { %>
+                  <% equipmentItems.lowStock.forEach((item, index) => { %>
+                    <div class="bg-white rounded-lg p-3 flex items-center justify-between hover:shadow-md transition-shadow">
+                      <div class="flex items-center space-x-3 flex-1 min-w-0">
+                        <div class="flex-none w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center text-white text-xs font-bold">
+                          <%= index + 1 %>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <p class="text-sm font-bold text-gray-800 truncate"><%= item.nama_barang %></p>
+                          <p class="text-xs text-gray-500"><%= item.kode_barang || 'N/A' %></p>
+                        </div>
+                      </div>
+                      <div class="flex items-center space-x-2 flex-none">
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-bold"><%= item.stock_akhir %> <%= item.satuan %></span>
+                        <span class="text-xs text-gray-500">/ <%= item.stock_minimal %></span>
+                        <span class="text-xs text-red-600 font-semibold">(-<%= item.stock_minimal - item.stock_akhir %>)</span>
+                      </div>
+                    </div>
+                  <% }); %>
+                <% } %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Out of Stock Items List -->
+          <div id="outOfStockList" class="hidden mb-4">
+            <div class="bg-gradient-to-r from-red-50 to-rose-50 rounded-xl p-4 border-2 border-red-200">
+              <h5 class="text-sm font-bold text-red-800 mb-3 flex items-center">
+                <i class="fas fa-list mr-2"></i>Daftar Barang Stok Habis (<%= equipmentItems.outOfStock.length %>)
+              </h5>
+              <div class="max-h-60 overflow-y-auto custom-scrollbar space-y-2">
+                <% if (equipmentItems.outOfStock.length === 0) { %>
+                  <p class="text-sm text-red-600 text-center py-4">Tidak ada barang</p>
+                <% } else { %>
+                  <% equipmentItems.outOfStock.forEach((item, index) => { %>
+                    <div class="bg-white rounded-lg p-3 flex items-center justify-between hover:shadow-md transition-shadow">
+                      <div class="flex items-center space-x-3 flex-1 min-w-0">
+                        <div class="flex-none w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center text-white text-xs font-bold">
+                          <%= index + 1 %>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <p class="text-sm font-bold text-gray-800 truncate"><%= item.nama_barang %></p>
+                          <p class="text-xs text-gray-500"><%= item.kode_barang || 'N/A' %></p>
+                        </div>
+                      </div>
+                      <div class="flex items-center space-x-2 flex-none">
+                        <span class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-bold">0 <%= item.satuan %></span>
+                        <span class="text-xs text-gray-500">/ <%= item.stock_minimal %></span>
+                        <span class="text-xs text-red-600 font-semibold">(-<%= item.stock_minimal %>)</span>
+                      </div>
+                    </div>
+                  <% }); %>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mt-6 pt-6 border-t border-gray-200">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-semibold text-gray-700">Tingkat Ketersediaan</span>
+            <span class="text-sm font-bold text-indigo-600">
+              <%= stats.equipment.totalItems > 0 ? Math.round((stats.equipment.availableItems / stats.equipment.totalItems) * 100) : 0 %>%
+            </span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-green-500 to-emerald-600 rounded-full transition-all duration-500 flex items-center justify-end pr-2" 
+                 style="width: <%= stats.equipment.totalItems > 0 ? (stats.equipment.availableItems / stats.equipment.totalItems) * 100 : 0 %>%">
+              <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+            </div>
+          </div>
+          <div class="flex items-center justify-between mt-2 text-xs text-gray-500">
+            <span><i class="fas fa-info-circle mr-1"></i>Persentase barang dengan stok tersedia</span>
+            <a href="/barang" class="text-indigo-600 hover:text-indigo-800 font-semibold hover:underline">
+              Lihat Detail <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
     
@@ -601,5 +877,116 @@
   <%- include('../partials/footer') %>
   
   <%- include('../partials/scripts') %>
+
+  <script>
+    // Statistics Cards Toggle Functionality
+    let isStatsVisible = true;
+
+    function toggleStatsCards() {
+      const statsCards = document.getElementById('statsCards');
+      const statsToggle = document.getElementById('statsToggle');
+      const statsChevron = document.getElementById('statsChevron');
+      const toggleText = statsToggle.querySelector('span');
+      
+      if (isStatsVisible) {
+        // Hide stats
+        statsCards.classList.add('stats-collapsed');
+        statsCards.classList.remove('stats-expanded');
+        statsChevron.classList.remove('fa-chevron-up');
+        statsChevron.classList.add('fa-chevron-down');
+        toggleText.textContent = 'Tampilkan';
+        
+        // Store preference
+        localStorage.setItem('dashboard-stats-visible', 'false');
+      } else {
+        // Show stats
+        statsCards.classList.remove('stats-collapsed');
+        statsCards.classList.add('stats-expanded');
+        statsChevron.classList.remove('fa-chevron-down');
+        statsChevron.classList.add('fa-chevron-up');
+        toggleText.textContent = 'Sembunyikan';
+        
+        // Store preference
+        localStorage.setItem('dashboard-stats-visible', 'true');
+      }
+      
+      isStatsVisible = !isStatsVisible;
+    }
+
+    // Equipment Cards Toggle Functionality
+    let isEquipmentVisible = true;
+
+    function toggleEquipmentCards() {
+      const equipmentCards = document.getElementById('equipmentCards');
+      const equipmentChevron = document.getElementById('equipmentChevron');
+      const headerDiv = event.currentTarget;
+      const toggleText = headerDiv.querySelector('span');
+      
+      if (isEquipmentVisible) {
+        // Hide equipment
+        equipmentCards.classList.add('equipment-collapsed');
+        equipmentCards.classList.remove('equipment-expanded');
+        equipmentChevron.classList.remove('fa-chevron-up');
+        equipmentChevron.classList.add('fa-chevron-down');
+        toggleText.textContent = 'Tampilkan';
+        
+        // Store preference
+        localStorage.setItem('dashboard-equipment-visible', 'false');
+      } else {
+        // Show equipment
+        equipmentCards.classList.remove('equipment-collapsed');
+        equipmentCards.classList.add('equipment-expanded');
+        equipmentChevron.classList.remove('fa-chevron-down');
+        equipmentChevron.classList.add('fa-chevron-up');
+        toggleText.textContent = 'Sembunyikan';
+        
+        // Store preference
+        localStorage.setItem('dashboard-equipment-visible', 'true');
+      }
+      
+      isEquipmentVisible = !isEquipmentVisible;
+    }
+
+    // Toggle Equipment Detail Lists
+    function toggleEquipmentDetail(type) {
+      event.stopPropagation(); // Prevent parent onclick
+      
+      const lists = {
+        'available': document.getElementById('availableList'),
+        'lowStock': document.getElementById('lowStockList'),
+        'outOfStock': document.getElementById('outOfStockList')
+      };
+      
+      // Hide all other lists
+      Object.keys(lists).forEach(key => {
+        if (key !== type) {
+          lists[key].classList.add('hidden');
+        }
+      });
+      
+      // Toggle selected list
+      lists[type].classList.toggle('hidden');
+    }
+
+    // Restore preferences on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      const savedStatsVisibility = localStorage.getItem('dashboard-stats-visible');
+      if (savedStatsVisibility === 'false') {
+        setTimeout(() => {
+          toggleStatsCards();
+        }, 100);
+      }
+
+      const savedEquipmentVisibility = localStorage.getItem('dashboard-equipment-visible');
+      if (savedEquipmentVisibility === 'false') {
+        setTimeout(() => {
+          const headerElement = document.querySelector('[onclick="toggleEquipmentCards()"]');
+          if (headerElement) {
+            headerElement.click();
+          }
+        }, 100);
+      }
+    });
+  </script>
 </body>
 </html>

@@ -15,6 +15,52 @@ router.get('/', async (req, res) => {
     // Get total stock
     const [totalStock] = await db.query('SELECT SUM(quantity) as total FROM warehouse_stock');
     
+    // Get total jamaah statistics (excluding Infant room types and deleted records)
+    const [totalJamaah] = await db.query(`
+      SELECT COUNT(DISTINCT od.nama_jamaah) as count
+      FROM order_details od
+      LEFT JOIN room_types rt ON od.room_type_id = rt.id
+      WHERE od.deleted_at IS NULL 
+      AND (rt.tipe_kamar IS NULL OR rt.tipe_kamar NOT LIKE '%Infant%')
+      AND od.nama_jamaah IS NOT NULL 
+      AND od.nama_jamaah != ''
+    `);
+    
+    // Get equipment availability statistics
+    const [equipmentStats] = await db.query(`
+      SELECT 
+        COUNT(*) as total_items,
+        SUM(CASE WHEN pb.stock_akhir >= pb.stock_minimal THEN 1 ELSE 0 END) as available_items,
+        SUM(CASE WHEN pb.stock_akhir < pb.stock_minimal AND pb.stock_akhir > 0 THEN 1 ELSE 0 END) as low_stock_items,
+        SUM(CASE WHEN pb.stock_akhir = 0 THEN 1 ELSE 0 END) as out_of_stock_items,
+        SUM(pb.stock_akhir) as total_stock_qty
+      FROM purchasing_barang pb
+    `);
+    
+    // Get available stock items list
+    const [availableStockItems] = await db.query(`
+      SELECT id_barang, kode_barang, nama_barang, stock_minimal, stock_akhir, satuan
+      FROM purchasing_barang
+      WHERE stock_akhir >= stock_minimal
+      ORDER BY nama_barang ASC
+    `);
+    
+    // Get low stock items list
+    const [lowStockItems] = await db.query(`
+      SELECT id_barang, kode_barang, nama_barang, stock_minimal, stock_akhir, satuan
+      FROM purchasing_barang
+      WHERE stock_akhir < stock_minimal AND stock_akhir > 0
+      ORDER BY stock_akhir ASC
+    `);
+    
+    // Get out of stock items list
+    const [outOfStockItems] = await db.query(`
+      SELECT id_barang, kode_barang, nama_barang, stock_minimal, stock_akhir, satuan
+      FROM purchasing_barang
+      WHERE stock_akhir = 0
+      ORDER BY nama_barang ASC
+    `);
+    
     // Get low stock items
     const [lowStock] = await db.query(`
       SELECT pb.nama_barang, pb.stock_minimal, SUM(ws.available_qty) as current_stock
@@ -54,7 +100,15 @@ router.get('/', async (req, res) => {
       barang: barang[0].count,
       warehouses: warehouses[0].count,
       totalStock: totalStock[0].total || 0,
-      lowStockCount: lowStock.length
+      lowStockCount: lowStock.length,
+      totalJamaah: totalJamaah[0].count || 0,
+      equipment: {
+        totalItems: equipmentStats[0].total_items || 0,
+        availableItems: equipmentStats[0].available_items || 0,
+        lowStockItems: equipmentStats[0].low_stock_items || 0,
+        outOfStockItems: equipmentStats[0].out_of_stock_items || 0,
+        totalStockQty: equipmentStats[0].total_stock_qty || 0
+      }
     };
     
     res.render('dashboard/index', {
@@ -63,6 +117,11 @@ router.get('/', async (req, res) => {
       lowStock,
       recentIncoming,
       recentOutgoing,
+      equipmentItems: {
+        available: availableStockItems,
+        lowStock: lowStockItems,
+        outOfStock: outOfStockItems
+      },
       body: '',
       success: req.query.success || null
     });
