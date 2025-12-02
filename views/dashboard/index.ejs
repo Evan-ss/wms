@@ -555,14 +555,6 @@
                   </button>
                 </div>
               </div>
-              
-              <!-- Dismiss Button -->
-              <button 
-                onclick="dismissAlert()" 
-                class="flex-none ml-4 w-8 h-8 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30 hover:border-white/50 transition-all duration-200 group"
-              >
-                <i class="fas fa-times text-white/70 group-hover:text-white text-sm"></i>
-              </button>
             </div>
           </div>
         </div>
@@ -866,22 +858,7 @@
       document.body.style.overflow = 'auto'; // Restore scrolling
     }
 
-    function dismissAlert() {
-      const alert = document.getElementById('developmentAlert');
-      alert.style.transform = 'translateY(-100%)';
-      alert.style.opacity = '0';
-      
-      // Show success toast
-      showToast('Alert Disembunyikan', 'Alert pengembangan telah disembunyikan untuk 24 jam', 'success');
-      
-      setTimeout(() => {
-        alert.style.display = 'none';
-        // Store preference to not show alert again for 24 hours
-        const hideUntil = new Date();
-        hideUntil.setHours(hideUntil.getHours() + 24);
-        localStorage.setItem('dev-alert-hidden-until', hideUntil.toISOString());
-      }, 300);
-    }
+    // dismissAlert function removed - alert now always visible for development status visibility
 
     function reportBug() {
       // Show information toast
@@ -914,16 +891,8 @@
 
     // Restore preferences on page load
     document.addEventListener('DOMContentLoaded', function() {
-      // Check if development alert should be hidden
-      const hiddenUntil = localStorage.getItem('dev-alert-hidden-until');
-      if (hiddenUntil && new Date() < new Date(hiddenUntil)) {
-        document.getElementById('developmentAlert').style.display = 'none';
-      } else {
-        // Show welcome toast after alert loads
-        setTimeout(() => {
-          showToast('Selamat Datang!', 'Dashboard Purchasing & Logistics siap digunakan', 'success');
-        }, 2000);
-      }
+      // Development alert is now always visible - no 24-hour hide functionality
+      // Welcome toast removed per user request
 
       const savedStatsVisibility = localStorage.getItem('dashboard-stats-visible');
       if (savedStatsVisibility === 'false') {
