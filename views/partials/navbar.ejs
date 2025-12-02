@@ -154,7 +154,7 @@
     cursor: pointer;
     pointer-events: auto;
     position: relative;
-    z-index: 60;
+    z-index: 10002; /* ensure profile button sits above other overlays */
   }
 
   .user-menu-btn:active {
@@ -344,6 +344,124 @@
       display: none !important;
     }
   }
+
+  /* Logout Confirmation Modal */
+  .logout-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .logout-modal-overlay.show {
+    display: flex;
+  }
+
+  .logout-modal {
+    background: white;
+    border-radius: 20px;
+    padding: 32px;
+    width: 90%;
+    max-width: 420px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    transform: scale(0.9);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .logout-modal-overlay.show .logout-modal {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  .logout-modal-icon {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.2);
+  }
+
+  .logout-modal-icon i {
+    font-size: 32px;
+    color: #dc2626;
+  }
+
+  .logout-modal-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1f2937;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .logout-modal-text {
+    font-size: 14px;
+    color: #6b7280;
+    text-align: center;
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  .logout-modal-buttons {
+    display: flex;
+    gap: 12px;
+  }
+
+  .logout-modal-btn {
+    flex: 1;
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .logout-modal-btn-cancel {
+    background: #f3f4f6;
+    color: #4b5563;
+  }
+
+  .logout-modal-btn-cancel:hover {
+    background: #e5e7eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .logout-modal-btn-confirm {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+  }
+
+  .logout-modal-btn-confirm:hover {
+    background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+  }
+
+  .logout-modal-btn:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
 </style>
 
 <!-- Navigation -->
@@ -373,8 +491,8 @@
       <div class="flex items-center space-x-3">
         
         <!-- User Menu -->
-        <div class="relative" style="z-index: 60;">
-          <button type="button" id="userMenuBtn" class="user-menu-btn focus:outline-none">
+        <div class="relative" style="z-index: 10001;">
+          <button type="button" id="userMenuBtn" class="user-menu-btn focus:outline-none" aria-haspopup="true" aria-expanded="false" data-custom-dropdown="true">
             <div class="user-info hidden md:flex">
               <span class="user-name text-end"><%= user ? user.name : 'Guest' %></span>
               <% if (user) { %>
@@ -409,7 +527,7 @@
             
             <div class="dropdown-divider"></div>
             
-            <a href="/logout" class="dropdown-item logout">
+            <a href="#" id="logoutBtn" class="dropdown-item logout">
               <i class="fas fa-sign-out-alt"></i>
               <span>Keluar</span>
             </a>
@@ -420,12 +538,35 @@
   </div>
 </nav>
 
+<!-- Logout Confirmation Modal -->
+<div id="logoutModal" class="logout-modal-overlay">
+  <div class="logout-modal">
+    <div class="logout-modal-icon">
+      <i class="fas fa-sign-out-alt"></i>
+    </div>
+    <div class="logout-modal-title">Konfirmasi Keluar</div>
+    <div class="logout-modal-text">
+      Apakah Anda yakin ingin keluar dari sistem? Anda harus login kembali untuk mengakses aplikasi.
+    </div>
+    <div class="logout-modal-buttons">
+      <button type="button" id="logoutCancelBtn" class="logout-modal-btn logout-modal-btn-cancel">
+        <i class="fas fa-times"></i>
+        <span>Batal</span>
+      </button>
+      <button type="button" id="logoutConfirmBtn" class="logout-modal-btn logout-modal-btn-confirm">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Ya, Keluar</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Simplified & Reliable Dropdown Toggle Script -->
 <script>
 (function() {
   'use strict';
   
-  function initUserMenu() {
+    function initUserMenu() {
     const userMenuBtn = document.getElementById('userMenuBtn');
     const userMenu = document.getElementById('userMenu');
     
@@ -437,24 +578,28 @@
     // Ensure initial closed state
     userMenu.classList.remove('show');
     
-    // Toggle menu on button click
-    userMenuBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      
+    // Reliable toggle: respond to pointerdown (fast on touch/mouse) and click as fallback
+    function toggleMenu(e) {
+      // stop propagation so document click handler doesn't immediately close it
+      if (e && e.stopPropagation) e.stopPropagation();
       const isShowing = userMenu.classList.contains('show');
-      
       if (isShowing) {
         userMenu.classList.remove('show');
+        userMenuBtn.setAttribute('aria-expanded','false');
       } else {
         userMenu.classList.add('show');
+        userMenuBtn.setAttribute('aria-expanded','true');
       }
-    });
+    }
+
+    userMenuBtn.addEventListener('pointerdown', function(e) { toggleMenu(e); });
+    userMenuBtn.addEventListener('click', function(e) { /* ensure click still toggles for browsers without pointer events */ toggleMenu(e); });
     
-    // Close when clicking outside
-    document.addEventListener('click', function(e) {
+    // Close when clicking/tapping outside
+    document.addEventListener('pointerdown', function(e) {
       if (!userMenuBtn.contains(e.target) && !userMenu.contains(e.target)) {
         userMenu.classList.remove('show');
+        userMenuBtn.setAttribute('aria-expanded','false');
       }
     });
     
@@ -465,8 +610,8 @@
       }
     });
     
-    // Close on menu item click
-    const menuItems = userMenu.querySelectorAll('.dropdown-item');
+    // Close on menu item click (except logout which needs confirmation)
+    const menuItems = userMenu.querySelectorAll('.dropdown-item:not(#logoutBtn)');
     menuItems.forEach(function(item) {
       item.addEventListener('click', function() {
         userMenu.classList.remove('show');
@@ -474,11 +619,62 @@
     });
   }
   
+  // Logout confirmation modal handler
+  function initLogoutModal() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    const logoutModal = document.getElementById('logoutModal');
+    const logoutCancelBtn = document.getElementById('logoutCancelBtn');
+    const logoutConfirmBtn = document.getElementById('logoutConfirmBtn');
+    const userMenu = document.getElementById('userMenu');
+    
+    if (!logoutBtn || !logoutModal) return;
+    
+    // Show modal when logout is clicked
+    logoutBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      logoutModal.classList.add('show');
+      if (userMenu) userMenu.classList.remove('show');
+    });
+    
+    // Close modal on cancel
+    if (logoutCancelBtn) {
+      logoutCancelBtn.addEventListener('click', function() {
+        logoutModal.classList.remove('show');
+      });
+    }
+    
+    // Confirm logout - redirect to logout URL
+    if (logoutConfirmBtn) {
+      logoutConfirmBtn.addEventListener('click', function() {
+        window.location.href = '/logout';
+      });
+    }
+    
+    // Close modal when clicking outside
+    logoutModal.addEventListener('click', function(e) {
+      if (e.target === logoutModal) {
+        logoutModal.classList.remove('show');
+      }
+    });
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && logoutModal.classList.contains('show')) {
+        logoutModal.classList.remove('show');
+      }
+    });
+  }
+  
   // Initialize when DOM is ready
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initUserMenu);
+    document.addEventListener('DOMContentLoaded', function() {
+      initUserMenu();
+      initLogoutModal();
+    });
   } else {
     initUserMenu();
+    initLogoutModal();
   }
 })();
 </script>

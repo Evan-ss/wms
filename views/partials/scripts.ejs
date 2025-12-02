@@ -6,8 +6,8 @@
   const userMenu = document.getElementById('userMenu');
   let sidebarOpen = true;
   
-  // User menu dropdown toggle
-  if (userMenuBtn) {
+  // User menu dropdown toggle (legacy). Skip if navbar provides a custom dropdown handler.
+  if (userMenuBtn && !userMenuBtn.dataset.customDropdown) {
     userMenuBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       userMenu.classList.toggle('hidden');

@@ -25,7 +25,10 @@
     }
     
     .login-container {
-      background: linear-gradient(135deg, #f9a825 0%, #f57f17 100%);
+      /* softer background (subtle warm tint) to match live site's pale look */
+      background: linear-gradient(135deg, rgba(249,168,37,0.06) 0%, rgba(245,127,23,0.04) 100%);
+        position: relative; /* allow absolute background icons */
+        overflow: hidden;
       min-height: 100vh;
     }
     
@@ -54,10 +57,79 @@
       transform: translateY(-2px);
       box-shadow: 0 8px 16px rgba(249, 168, 37, 0.3);
     }
+
+    /* decorative icons placed on the background */
+    .background-icons { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+    /* Slight warm/orange tint and higher opacity so icons appear on pale background */
+    .background-icon { color: rgba(245,127,23,0.12); position: absolute; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.06)); }
+    .background-icon.icon-1 { top: 8%; left: 5%; font-size: 72px; transform: rotate(-10deg); }
+    .background-icon.icon-2 { top: 12%; right: 8%; font-size: 64px; transform: rotate(6deg); }
+    .background-icon.icon-3 { bottom: 18%; left: 6%; font-size: 64px; transform: rotate(-6deg); }
+    .background-icon.icon-4 { bottom: 8%; right: 6%; font-size: 88px; transform: rotate(6deg); }
+    .background-icon.icon-5 { top: 36%; left: 10%; font-size: 56px; transform: rotate(-2deg); }
+    .background-icon.icon-6 { bottom: 10%; left: 42%; font-size: 48px; transform: rotate(2deg); }
+
+    /* subtle float animation for icons */
+    @keyframes floaty { 0% { transform: translateY(0); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0); } }
+    .background-icon.floaty { animation: floaty 6s ease-in-out infinite; }
+    .background-icon.icon-1.floaty { animation-duration: 7.5s; animation-delay: 0s; }
+    .background-icon.icon-2.floaty { animation-duration: 6.5s; animation-delay: 0.2s; }
+    .background-icon.icon-3.floaty { animation-duration: 6s; animation-delay: 0.42s; }
+    .background-icon.icon-4.floaty { animation-duration: 8s; animation-delay: 0.18s; }
+    .background-icon.icon-5.floaty { animation-duration: 6.2s; animation-delay: 0.3s; }
+    .background-icon.icon-6.floaty { animation-duration: 7.8s; animation-delay: 0.1s; }
+
+    /* moving truck animation (left -> right looping) using viewport units so it crosses the screen reliably */
+    @keyframes truck-move { 0% { transform: translateX(-120vw); opacity: 0; } 8% { opacity: 1; } 50% { opacity: 1; } 92% { opacity: 0; } 100% { transform: translateX(120vw); opacity: 0; } }
+    /* move truck mid-screen; larger and slightly more opaque so it's visible */
+    .background-icon.truck { font-size: 88px; top: 46%; left: 0; transform: translateX(0); animation: truck-move 18s linear infinite; color: rgba(245,127,23,0.36); will-change: transform; }
+    /* single truck only — additional convoy trucks removed */
+
+    /* place card above icons */
+    .login-card { position: relative; z-index: 1; }
+
+    /* hide icons on small screens to avoid clutter */
+    @media (max-width: 768px) { .background-icon { display: none; } /* keep the truck visible on mobile */ .background-icon.truck, .background-icon.truck-2, .background-icon.truck-3 { display: block; } }
+
+    /* respect prefers-reduced-motion */
+    @media (prefers-reduced-motion: reduce) {
+      .background-icon, .background-icon.truck { animation: none !important; }
+    }
+    /* Login progress modal & progress bar */
+    .modal-overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.35); z-index: 60; backdrop-filter: blur(3px); }
+    .modal-overlay.show { display: flex; }
+    .modal-content { background: #fff; padding: 18px; border-radius: 12px; width: 360px; max-width: calc(100% - 32px); box-shadow: 0 10px 30px rgba(12,12,12,0.08); border: 1px solid rgba(0,0,0,0.04); text-align: center; }
+    .modal-logo { width:56px; height:56px; object-fit:contain; margin:0 auto 8px; border-radius:10px; box-shadow: 0 6px 18px rgba(15,23,42,0.06); }
+    .modal-title { font-weight: 600; color: #0f172a; margin-bottom: 8px; }
+    .modal-sub { font-size: 13px; color: #6b7280; margin-bottom: 14px; }
+    .progress-track { background: rgba(15,23,42,0.06); height: 12px; border-radius: 999px; overflow: hidden; margin-bottom: 10px; position: relative; }
+    .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary-color), var(--primary-dark)); transition: width 300ms linear; position: relative; z-index: 1; }
+    /* truck icon that rides on the progress bar */
+    .progress-truck { position: absolute; top: -22px; left: 0%; transform: translateX(-50%); font-size: 22px; color: rgba(245,127,23,0.98); z-index: 2; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.12)); transition: left 80ms linear, transform 120ms ease; }
+    .loading-dots { display:flex; gap:6px; align-items:center; justify-content:center; margin-top:8px; margin-bottom:6px; }
+    .loading-dots span { width:8px; height:8px; border-radius:50%; background: rgba(15,23,42,0.12); display:inline-block; opacity:0.6; transform: translateY(0); animation: dots 1s infinite linear; }
+    .loading-dots span:nth-child(1) { animation-delay: 0s; background: var(--primary-color); }
+    .loading-dots span:nth-child(2) { animation-delay: 0.15s; background: rgba(249,168,37,0.85); }
+    .loading-dots span:nth-child(3) { animation-delay: 0.3s; background: rgba(245,127,23,0.85); }
+    @keyframes dots { 0% { transform: translateY(0); opacity:0.6; } 50% { transform: translateY(-6px); opacity:1; } 100% { transform: translateY(0); opacity:0.6; } }
+    .progress-meta { display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:13px; color:#374151; }
+    .spinner { width:18px; height:18px; border-radius:50%; border:2px solid rgba(0,0,0,0.08); border-top-color: rgba(255,255,255,0.9); box-shadow: inset 0 0 0 2px rgba(0,0,0,0.02); background: linear-gradient(90deg, var(--primary-color), var(--primary-dark)); animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
   <div class="login-container min-h-screen flex items-center justify-center p-4">
+    <!-- decorative icons (non-interactive) -->
+    <div class="background-icons" aria-hidden="true">
+      <i class="fa-solid fa-warehouse background-icon icon-1 floaty"></i>
+      <i class="fa-solid fa-boxes-stacked background-icon icon-2 floaty"></i>
+      <i class="fa-solid fa-location-dot background-icon icon-3 floaty"></i>
+      <i class="fa-solid fa-address-book background-icon icon-4 floaty"></i>
+      <i class="fa-solid fa-clipboard-list background-icon icon-5 floaty"></i>
+      <i class="fa-solid fa-clipboard-check background-icon icon-6 floaty"></i>
+      <!-- moving truck icon (single) - prefer fa-truck-fast; fallback to inline SVG if unavailable -->
+      <i class="fa-solid fa-truck-fast background-icon truck" style="filter: drop-shadow(0 2px 8px rgba(245,127,23,0.06));" aria-hidden="true"></i>
+    </div>
     <div class="w-full max-w-md">
       
       <!-- Login Card -->
@@ -160,6 +232,26 @@
     </div>
   </div>
 
+  <!-- Login progress modal (appears when user submits login) -->
+  <div id="loginProgressModal" class="modal-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-content" role="document">
+      <img src="/images/logo.png" alt="logo" class="modal-logo" />
+      <div class="modal-title">Sedang masuk...</div>
+      <div class="modal-sub">Mohon tunggu sejenak, kami memproses masuk Anda.</div>
+      <div class="progress-track" aria-hidden="true">
+        <i class="fa-solid fa-truck-fast progress-truck" aria-hidden="true"></i>
+        <div id="loginProgressBar" class="progress-bar"></div>
+      </div>
+      <div class="loading-dots" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="progress-meta">
+        <div style="display:flex;align-items:center;gap:8px;"><div class="spinner" aria-hidden="true"></div><div id="loginProgressText">Memulai</div></div>
+        <div id="loginProgressPct">0%</div>
+      </div>
+    </div>
+  </div>
+
   <script>
     function togglePassword() {
       const passwordInput = document.getElementById('password');
@@ -209,5 +301,123 @@
       // Removed: if (password.length < 6) check
     });
   </script>
+  <script>
+    // If Font Awesome doesn't render `fa-truck-fast`, replace truck icons with an inline SVG fallback.
+    (function() {
+      // Simple truck-fast SVG that uses currentColor so it follows .background-icon color/font-size
+      const truckFastSVG = '<svg aria-hidden="true" focusable="false" viewBox="0 0 640 512" xmlns="http://www.w3.org/2000/svg" role="img" style="width:1em;height:1em;vertical-align:middle;fill:currentColor;">'
+        + '<path d="M624 352h-16V240c0-13.3-10.7-24-24-24h-88V152c0-13.3-10.7-24-24-24H432V64c0-35.3-28.7-64-64-64H48C21.5 0 0 21.5 0 48v336c0 26.5 21.5 48 48 48h16c0 35.3 28.7 64 64 64s64-28.7 64-64h192c0 35.3 28.7 64 64 64s64-28.7 64-64h32c26.5 0 48-21.5 48-48v-16c0-8.8-7.2-16-16-16zM160 448c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm320 0c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zM544 288H416V208h80v48c0 8.8 7.2 16 16 16h32v16zM128 176h256v48H128v-48z"/></svg>';
+
+      function needsFallback() {
+        // create temporary test element and measure
+        const test = document.createElement('i');
+        test.className = 'fa-solid fa-truck-fast';
+        test.style.position = 'absolute';
+        test.style.opacity = '0';
+        test.style.pointerEvents = 'none';
+        document.body.appendChild(test);
+        const rect = test.getBoundingClientRect();
+        document.body.removeChild(test);
+        // If width is very small, the glyph likely didn't render
+        return (rect.width === 0 || rect.width < 4);
+      }
+
+      if (needsFallback()) {
+        const trucks = document.querySelectorAll('.background-icon.fa-truck-fast');
+        trucks.forEach(function(el) {
+          // keep same classes for sizing/color but replace inner content with SVG
+          el.classList.remove('fa-solid', 'fa-truck-fast');
+          el.innerHTML = truckFastSVG;
+        });
+      }
+    })();
+  </script>
+  <script>
+    // Login progress modal behavior (time-based)
+    (function() {
+      const form = document.querySelector('form');
+      const modal = document.getElementById('loginProgressModal');
+      const bar = document.getElementById('loginProgressBar');
+      const pct = document.getElementById('loginProgressPct');
+      const txt = document.getElementById('loginProgressText');
+      // Duration in milliseconds (set between 2000 and 3000 as requested)
+      const DURATION = 2500;
+      let timerId = null;
+      let animStart = 0;
+
+      function showModalTimedAndSubmit(e) {
+        if (!modal || !form) return;
+        // if earlier validation prevented submit, don't show modal
+        if (e && e.defaultPrevented) return;
+        // prevent immediate submit so we can show timed progress
+        if (e) e.preventDefault();
+
+        // disable submit to prevent double submits
+        const submitBtn = form.querySelector('[type="submit"]');
+        if (submitBtn) submitBtn.disabled = true;
+
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+
+        // reset and start progress bar transition
+        if (bar) {
+          bar.style.transition = 'none';
+          bar.style.width = '0%';
+          // force reflow
+          bar.getBoundingClientRect();
+          bar.style.transition = 'width ' + DURATION + 'ms linear';
+          // start to 100%
+          requestAnimationFrame(function() { bar.style.width = '100%'; });
+        }
+
+        animStart = Date.now();
+        // update percentage text periodically
+        updateText();
+        timerId = setInterval(updateText, 50);
+
+        // after duration, finalize and submit form
+        setTimeout(function() {
+          if (timerId) { clearInterval(timerId); timerId = null; }
+          if (pct) pct.textContent = '100%';
+          if (txt) txt.textContent = 'Selesai';
+          // small delay to let animation reach 100%
+          setTimeout(function() { form.submit(); }, 120);
+        }, DURATION);
+      }
+
+      function updateText() {
+        if (!animStart) return;
+        const elapsed = Math.max(0, Date.now() - animStart);
+        const progress = Math.min(1, elapsed / DURATION);
+        const pctVal = Math.round(progress * 100);
+        if (pct) pct.textContent = pctVal + '%';
+        if (txt) {
+          if (pctVal < 20) txt.textContent = 'Memulai';
+          else if (pctVal < 60) txt.textContent = 'Mengirim kredensial';
+          else if (pctVal < 90) txt.textContent = 'Menunggu respons server';
+          else txt.textContent = 'Menyelesaikan...';
+        }
+        // move the truck icon along with progress
+        const truckEl = document.querySelector('.progress-truck');
+        if (truckEl) {
+          // set left based on pctVal; clamp to [0,100]
+          const leftPct = Math.max(0, Math.min(100, pctVal));
+          truckEl.style.left = leftPct + '%';
+          // slightly rotate/tilt for motion when moving
+          if (pctVal < 98) truckEl.style.transform = 'translateX(-50%) translateY(' + (Math.sin(progress * Math.PI * 2) * -2) + 'px)';
+          else truckEl.style.transform = 'translateX(-50%) translateY(0)';
+        }
+      }
+
+      if (form) {
+        form.addEventListener('submit', showModalTimedAndSubmit);
+      }
+
+      // cleanup timers on pagehide/unload
+      window.addEventListener('pagehide', function() { if (timerId) clearInterval(timerId); });
+      window.addEventListener('beforeunload', function() { if (timerId) clearInterval(timerId); });
+    })();
+  </script>
+  
 </body>
 </html>
